@@ -286,8 +286,8 @@ Kiron-coding-assistant/
 ├── requirements.txt             # Python dependencies
 ├── README.md                    # This file
 └── legal_files/
-    ├── alex_in_office.png       # Alex's photo
-    ├── alex_Kiron.png           # Kiron illustration
+    ├── alex_in_office.jpg       # Alex's photo
+    ├── alex_kiron.jpg           # Kiron illustration
     ├── alex.md                  # Alex's persona
     ├── alex_work_prompts.md     # Example prompts
     └── work_files/              # Working directory for documents

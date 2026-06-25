@@ -89,7 +89,7 @@ if st.session_state.page == "About Alex":
     col1, col2 = st.columns(2, gap="large")
     
     with col1:
-        st.image("legal_files/alex_in_office.png", width="stretch")
+        st.image("legal_files/alex_in_office.jpg", width="stretch")
     
     with col2:
         st.title("Meet Alex Hoffmann")
@@ -238,7 +238,7 @@ Everything stays local. Nothing leaves your machine.
                         st.error(f"Error: {str(e)}")
 
     with col_files:
-        st.image("legal_files/alex_Kiron.png", width="stretch")
+        st.image("legal_files/alex_kiron.jpg", width="stretch")
         st.divider()
         st.subheader("📁 Files")
 
