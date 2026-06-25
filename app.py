@@ -5,6 +5,9 @@ import asyncio
 from agent import agent
 from pathlib import Path
 
+import os
+print(f"DEBUG: GEMINI_API_KEY = {os.getenv('GEMINI_API_KEY')}")
+
 st.set_page_config(page_title="Kiron Coding Assistant", layout="wide")
 
 # Custom styling for cooler button color
