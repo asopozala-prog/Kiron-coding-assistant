@@ -1,313 +1,424 @@
-# Kiron Coding Assistant
+# 🦕 Kiron Coding Assistant
 
-A functional coding assistant built with Python and Pydantic AI — appliedAI Institute THRIVE project.
+A local AI agent for confidential legal document management, built through hands-on learning of agentic AI concepts.
+
+---
 
 ## Overview
 
-This project demonstrates how to build an agentic system that can:
-- Respond to natural language prompts
-- Maintain conversation memory across multiple turns
-- Execute tools to interact with the file system
-- Log tool execution in real time
-- Adapt reasoning effort based on task complexity
-- Dynamically load and apply skills at runtime
+**Kiron** is a practical demonstration of building a real-world AI agent. It combines six foundational exercises in agentic AI with a complete, working application for Alex — a legal assistant who needs to organize and analyze confidential documents without uploading them to the cloud.
 
-## Project Structure
+Everything runs locally. Nothing leaves your machine.
 
-```
-.
-├── exercise1.py       # First LLM call
-├── exercise2.py       # Conversation state with message history
-├── exercise3.py       # Tool calling with file operations
-├── exercise4.py       # Execution hooks for observability
-├── exercise5.py       # Dynamic reasoning effort detection
-├── exercise6.py       # Dynamic skill loading
-├── skills/            # Skill definitions (Markdown files)
-│   └── code_review.md
-├── .env               # API configuration (not committed)
-└── README.md          # This file
-```
+---
 
-## Setup
+## Part 1: Learning the Foundations (Exercises 1-6)
 
-### Prerequisites
-- Python 3.12+
-- pip
-- Virtual environment
+These exercises teach the core concepts of building AI agents with Pydantic AI and LLM APIs.
 
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/asopozala-prog/Kiron-coding-assistant.git
-cd Kiron-coding-assistant
-```
-
-2. Create and activate a virtual environment:
-```bash
-python3.12 -m venv .venv312
-source .venv312/bin/activate
-```
-
-3. Install dependencies:
-```bash
-pip install pydantic-ai python-dotenv python-frontmatter
-```
-
-4. Create a `.env` file with your API key:
-```
-GEMINI_API_KEY=your_api_key_here
-```
-
-## Exercises
-
-### Exercise 1: Your First LLM Call
+### Exercise 1: First LLM Call
 **File:** `exercise1.py`
 
-Demonstrates the basic pattern: configure a model provider, bind a model, create an agent, and run it.
+Learn how to:
+- Set up a Google Gemini API connection
+- Create your first agent
+- Send a prompt and get a response
+- Build an interactive chat loop
 
-**Key concepts:**
-- Provider configuration (GoogleProvider)
-- Model instantiation (GoogleModel)
-- Agent creation with system instructions
-- Interactive loop with `agent.run()`
-
-**What was tested:**
-- Agent responds to user prompts
-- Basic conversation loop works
-
-**Run:**
-```bash
-python3.12 exercise1.py
-```
+**Concept:** Basic agent initialization and single-turn interaction.
 
 ---
 
 ### Exercise 2: Conversation State
 **File:** `exercise2.py`
 
-Extends Exercise 1 by adding conversation memory. The agent now remembers previous turns.
+Learn how to:
+- Maintain conversation history across multiple turns
+- Use `message_history` to keep context
+- Build multi-turn conversations
+- Access all messages from a result
 
-**Key concepts:**
-- Message history capture with `result.all_messages()`
-- Passing history back to the agent via `message_history` parameter
-- Multi-turn coherent conversations
-
-**What was tested:**
-- Agent maintains context across multiple turns
-- Agent can reference information from earlier in the conversation
-
-**Run:**
-```bash
-python3.12 exercise2.py
-```
-
-**Test:** Tell the agent your name, then ask it to recall your name in the next turn.
+**Concept:** Stateful conversation and memory management.
 
 ---
 
 ### Exercise 3: Tool Calling
 **File:** `exercise3.py`
 
-Gives the agent the ability to interact with the file system through tools.
+Learn how to:
+- Define custom tools (functions) for the agent
+- Use `FunctionToolset` to expose tools
+- Create file operation tools (`read_file`, `write_file`, `search_files`, `delete_file`)
+- Let the agent decide when to use tools
 
-**Key concepts:**
-- Tool definition as Python functions with clear docstrings
-- Capability pattern (`AbstractCapability`)
-- Tool registration via `FunctionToolset`
-- Agent autonomously deciding when to use tools
-
-**Available tools:**
-- `read_file(path)` — Read file contents
-- `write_file(path, content)` — Write content to a file
-- `search_files(pattern)` — Search for files matching a glob pattern
-- `delete_file(path)` — Delete a file
-
-**What was tested:**
-- Agent can call tools when needed
-- File operations execute correctly
-- Agent integrates tool results into responses
-
-**Run:**
-```bash
-python3.12 exercise3.py
-```
-
-**Test:** Ask the agent to create a Python file, e.g., `"write a hello world python file called hello.py"`
+**Concept:** Extending agent capabilities through tool definitions.
 
 ---
 
 ### Exercise 4: Execution Hooks
 **File:** `exercise4.py`
 
-Adds observability by logging tool calls as they happen.
+Learn how to:
+- Intercept tool calls before they execute
+- Log tool usage and arguments
+- Implement `before_tool_execute` hooks
+- Monitor agent behavior
 
-**Key concepts:**
-- `before_tool_execute()` hook in capabilities
-- Real-time logging of tool name and arguments
-- Hooks fire before tool execution
-
-**What was tested:**
-- Hook fires before each tool call
-- Tool name and arguments are logged correctly
-- Hook does not interfere with tool execution
-
-**Run:**
-```bash
-python3.12 exercise4.py
-```
-
-**Expected output:**
-```
-You: create a file called test.txt with hello world
-→ Calling tool: write_file
-  Args: {'path': 'test.txt', 'content': 'hello world'}
-Assistant: File created successfully.
-```
+**Concept:** Observability and control over tool execution.
 
 ---
 
 ### Exercise 5: Reasoning Effort
 **File:** `exercise5.py`
 
-Dynamically adjusts the model's reasoning depth based on task complexity.
+Learn how to:
+- Adjust model reasoning based on task complexity
+- Use `ModelSettings` to control inference behavior
+- Implement heuristics for effort levels (low, medium, high)
+- Optimize cost and latency
 
-**Key concepts:**
-- `get_model_settings()` method in capabilities
-- Automatic complexity detection (prompt length + keywords)
-- Three effort levels: `low`, `medium`, `high`
-- Cost optimization by routing simple tasks to lighter reasoning
-
-**Detection logic:**
-- **Low effort:** Prompts < 50 chars OR contain "simple", "quick", "short", "list"
-- **High effort:** Contain "complex", "explain", "analyse", "debug", "why", "how"
-- **Medium effort:** Everything else
-
-**What was tested:**
-- Simple prompts route to low reasoning effort
-- Complex prompts route to high reasoning effort
-- Effort level is logged before each run
-
-**Run:**
-```bash
-python3.12 exercise5.py
-```
-
-**Test:**
-- Simple: `"list files"` → `[Reasoning effort: low]`
-- Complex: `"explain how to debug a Python script"` → `[Reasoning effort: high]`
+**Concept:** Dynamic model configuration based on prompt characteristics.
 
 ---
 
 ### Exercise 6: Skills and Extensibility
 **File:** `exercise6.py`
 
-Enables the agent to dynamically discover and load skills from Markdown files.
+Learn how to:
+- Load skills from Markdown files using `frontmatter`
+- Create a `Skills` capability
+- Extend agent behavior with loaded instructions
+- Build modular, composable agents
 
-**Key concepts:**
-- Skill files as Markdown with YAML frontmatter
-- `get_instructions()` method to list available skills
-- `load_skill()` tool for runtime skill loading
-- Extensibility without code changes
+**Concept:** Extensible agent design through skill loading.
 
-**Skill file format:**
-```markdown
----
-name: Code Review
-description: Reviews Python code for correctness, style, and potential bugs.
 ---
 
-When asked to review code, follow these steps:
-1. Check for syntax errors.
-2. Identify logic issues.
-3. Suggest improvements.
-```
+## Part 2: The Real Project - Alex's Legal Assistant
 
-**What was tested:**
-- Agent discovers available skills from `skills/` folder
-- Agent can call `load_skill()` when relevant
-- Loaded skill content is integrated into agent reasoning
+### The Problem
 
-**Run:**
+Alex is a junior legal assistant at a law firm in Berlin. His day is filled with:
+- Organizing case files from multiple sources
+- Categorizing sensitive documents
+- Preparing files for supervising lawyers
+- Maintaining secure archives
+
+**60% of his day is repetitive work** that requires accuracy but no creativity. The real cost? Mental energy that could be spent on his own life.
+
+### The Solution: Kiron
+
+**Kiron** is a local AI assistant that helps Alex work with confidential documents without uploading them to the cloud.
+
+**Key capabilities:**
+- 📄 **Organize** — Create file structures, search documents, categorize by type
+- 🔍 **Analyze** — Extract key dates, identify parties, find critical clauses
+- ⚠️ **Review** — Spot missing signatures, flag unusual terms, identify risks
+
+**Why local?**
+Confidential client documents **never leave the office**. Everything runs on Alex's machine. Everything stays secure.
+
+---
+
+## How It Works
+
+### The Agent (`agent.py`)
+
+The unified agent combines all six exercises into one coherent system:
+
+- **FileOperations** — Tools for reading, writing, searching, and deleting files in `legal_files/work_files/`
+- **Skills** — Extensible skill loading from Markdown files
+- **Intelligent filename resolution** — Understands vague references like "messy case data" and maps them to actual files
+
+**Key features:**
+- Fuzzy filename matching — Alex doesn't need to remember exact filenames
+- Alias mapping — Common phrases map to actual files automatically
+- Folder restrictions — All operations stay inside `legal_files/work_files/`
+- Direct action — The agent calls tools immediately instead of asking for clarification
+
+### The Interface (`app.py`)
+
+A two-page Streamlit app:
+
+1. **About Alex** — Introduces the problem and the solution
+2. **Chat with Kiron** — Interactive chat interface with a live file viewer
+
+**Features:**
+- Real-time file viewing on the right side
+- Chat history maintained across sessions
+- Friendly dinosaur persona (Kiron is heat-resistant! 🦕)
+- Local-first design — no external dependencies
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.12+
+- A Google Gemini API key (free tier available)
+- macOS, Linux, or Windows
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/asopozala-prog/Kiron-coding-assistant.git
+   cd Kiron-coding-assistant
+   ```
+
+2. **Create a virtual environment:**
+   ```bash
+   python3.12 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Set up your API key:**
+   Create a `.env` file in the project root:
+   ```
+   GEMINI_API_KEY=your_api_key_here
+   ```
+
+### Running the App
+
+Start the Streamlit interface:
+
 ```bash
-python3.12 exercise6.py
+streamlit run app.py
 ```
 
-**Test:** Ask the agent to review code, e.g., `"review this code: def hello(): print('hi')"`
+The app will open in your browser at `http://localhost:8501`.
 
-Expected behavior:
+### Running the Exercises
+
+To review individual exercises:
+
+```bash
+python exercise1.py
+python exercise2.py
+# ... etc
 ```
-You: review this code: def hello(): print('hi')
-→ Calling tool: load_skill
-  Args: {'skill_name': 'Code Review'}
-Assistant: I'll review your code using the Code Review skill...
+
+Or run the unified agent directly:
+
+```bash
+python agent.py
 ```
 
 ---
 
-## Architecture
+## Important: This is a Demonstration
 
-Each exercise builds on the previous one:
+**Current Setup (Demo)**
+- Uses Google Gemini API via cloud
+- Requires internet connection
+- API calls are billed
+- Good for learning and prototyping
+
+**Production Deployment (Real Law Firm)**
+
+For a real law firm handling confidential documents, you would:
+
+### 1. Run a Local LLM Model
+- Download an open-source model (e.g., Llama 2, Mistral, or similar)
+- Run it on an office computer with adequate hardware
+- No internet required, no API calls, no billing
+- Complete data privacy
+
+### 2. Hardware Requirements
+- GPU with 16GB+ VRAM (NVIDIA RTX 4090, A100, etc.)
+- Or CPU with 32GB+ RAM (slower but works)
+- Sufficient disk space for model weights (7-70GB depending on model)
+
+### 3. Implementation
+- Replace `GoogleProvider` with a local provider (e.g., Ollama, LM Studio, vLLM)
+- Keep the same agent code (`agent.py`)
+- Keep the same UI (`app.py`)
+- Only the model backend changes
+
+### 4. Example: Using Ollama
+
+Instead of:
+```python
+from pydantic_ai.providers.google import GoogleProvider
+
+provider = GoogleProvider(api_key=os.getenv("GEMINI_API_KEY"))
+model = GoogleModel("gemini-2.5-flash", provider=provider)
+```
+
+You would use:
+```python
+from ollama import OllamaProvider
+
+provider = OllamaProvider(model="mistral")
+model = OllamaModel("mistral", provider=provider)
+```
+
+### 5. Benefits of Local Deployment
+- ✅ Zero data leaves the office
+- ✅ No API costs
+- ✅ No internet dependency
+- ✅ Full compliance with data protection laws (GDPR, etc.)
+- ✅ Instant responses (no network latency)
+
+**This demonstration uses the cloud API for accessibility, but the architecture is designed to work with any LLM provider.**
+
+---
+
+## Project Structure
 
 ```
-Exercise 1: Basic LLM Call
-    ↓
-Exercise 2: + Conversation Memory
-    ↓
-Exercise 3: + Tool Calling
-    ↓
-Exercise 4: + Execution Hooks (observability)
-    ↓
-Exercise 5: + Dynamic Reasoning Effort
-    ↓
-Exercise 6: + Dynamic Skill Loading
+Kiron-coding-assistant/
+├── exercise1.py                 # First LLM call
+├── exercise2.py                 # Conversation state
+├── exercise3.py                 # Tool calling
+├── exercise4.py                 # Execution hooks
+├── exercise5.py                 # Reasoning effort
+├── exercise6.py                 # Skills and extensibility
+├── agent.py                     # Unified agent (all 6 exercises combined)
+├── app.py                       # Streamlit UI
+├── .env                         # API keys (not in repo)
+├── requirements.txt             # Python dependencies
+├── README.md                    # This file
+└── legal_files/
+    ├── alex_in_office.png       # Alex's photo
+    ├── alex_Kiron.png           # Kiron illustration
+    ├── alex.md                  # Alex's persona
+    ├── alex_work_prompts.md     # Example prompts
+    └── work_files/              # Working directory for documents
+        ├── messy_case_data.txt          # Sample case data
+        ├── case_file_template.txt       # Case file template
+        └── sample_contract.md           # Sample contract
 ```
 
-The final agent (Exercise 6) is configured with:
-- **Model:** Gemini 2.5 Flash (via GoogleProvider)
-- **Instructions:** System prompt defining the agent's role
-- **Capabilities:**
-  - `FileOperations` — read, write, search, delete files
-  - `ReasoningEffort` — automatic complexity detection
-  - `Skills` — dynamic skill discovery and loading
-- **Memory:** Conversation history across turns
-- **Observability:** Real-time tool execution logging
+---
 
-## Technology Stack
+## Example Workflows
 
-| Tool | Purpose |
-|---|---|
-| Python 3.12 | Runtime |
-| Pydantic AI | Agent framework |
-| Google Gemini API | Language model |
-| python-dotenv | Environment variable management |
-| python-frontmatter | Markdown frontmatter parsing |
+### Workflow 1: Extract Case Information
 
-## Key Learnings
+**Alex asks:**
+> "Read the messy case data, find the case ID, and fill it into the case file template."
 
-1. **Agents vs. LLM calls:** Agents can maintain state, call tools, and iterate — enabling multi-step workflows.
-2. **Capabilities pattern:** Modular, composable units that add behavior (tools, hooks, settings) without cluttering the agent.
-3. **Observability matters:** Hooks let you see what the agent is doing in real time.
-4. **Reasoning effort:** Not all tasks need deep reasoning; detecting complexity saves cost and latency.
-5. **Extensibility:** Skills as Markdown files let you add new capabilities without touching code.
+**Kiron:**
+1. Reads `messy_case_data.txt`
+2. Extracts the case ID
+3. Updates `case_file_template.txt` with the ID
+4. Confirms completion
 
-## Notes
+### Workflow 2: Analyze a Contract
 
-- The `.env` file is not committed to GitHub for security.
-- Gemini API has rate limits on the free tier.
-- Each exercise is independent but builds on previous concepts.
-- Exercises 4–6 were not fully tested due to API availability, but code structure is correct.
+**Alex asks:**
+> "Summarize the sample contract and highlight any unusual terms."
 
-## Push to GitHub
+**Kiron:**
+1. Reads `sample_contract.md`
+2. Summarizes key sections
+3. Flags potential risks
+4. Returns analysis
 
-After making changes, push with:
+### Workflow 3: Organize Files
 
-```bash
-git add README.md
-git commit -m "Add comprehensive README with all 6 exercises"
-git push
-```
+**Alex asks:**
+> "Create a new file called client_notes.txt and add today's meeting notes."
+
+**Kiron:**
+1. Creates `client_notes.txt` in `work_files/`
+2. Adds the content
+3. Confirms the file is ready
+
+---
+
+## Key Design Decisions
+
+### 1. Local-First Architecture
+All files stay on Alex's machine. No cloud uploads. No external storage. This is critical for confidential legal documents.
+
+### 2. Fuzzy Filename Matching
+Instead of asking "What's the exact filename?", Kiron understands:
+- "messy case data" → `messy_case_data.txt`
+- "case template" → `case_file_template.txt`
+- "sample contract" → `sample_contract.md`
+
+### 3. Unified Agent Design
+All six exercises are combined into one `agent.py`. The exercises remain as standalone learning files, but the real application uses the integrated agent.
+
+### 4. Folder Restrictions
+All file operations are restricted to `legal_files/work_files/`. The agent cannot access files outside this directory, ensuring security and organization.
+
+### 5. Streamlit UI
+A simple, intuitive interface that doesn't require technical knowledge. Alex can use Kiron without understanding how it works under the hood.
+
+---
+
+## Technical Stack
+
+- **Framework:** Pydantic AI
+- **LLM:** Google Gemini 2.5 Flash (via GoogleProvider)
+- **UI:** Streamlit
+- **Language:** Python 3.12
+- **File Format:** Markdown, plain text
+
+---
+
+## Learning Outcomes
+
+By building this project, you'll understand:
+
+1. ✅ How to initialize and configure an LLM agent
+2. ✅ How to maintain conversation state across multiple turns
+3. ✅ How to define and use tools effectively
+4. ✅ How to monitor and control tool execution
+5. ✅ How to optimize model behavior based on task complexity
+6. ✅ How to build extensible, modular agent systems
+7. ✅ How to create a real-world application that solves a concrete problem
+
+---
+
+## Future Enhancements
+
+Potential improvements for future versions:
+
+- **OCR Support** — Extract text from scanned documents
+- **Multi-file Analysis** — Compare and cross-reference multiple documents
+- **Risk Scoring** — Automated risk assessment for contracts
+- **Audit Logging** — Track all file operations for compliance
+- **Template Library** — Pre-built templates for common document types
+- **Batch Processing** — Process multiple files in one request
+
+---
 
 ## License
 
-MIT
+This project is part of the THRIVE optional portfolio project for the Agentic AI Masterclass.
+
+---
+
+## Author
+
+Built by Mei as part of the THRIVE portfolio project.
+
+**GitHub:** [asopozala-prog/Kiron-coding-assistant](https://github.com/asopozala-prog/Kiron-coding-assistant)
+
+---
+
+## Acknowledgments
+
+- **Agentic AI Masterclass** — For the foundational exercises and concepts
+- **Pydantic AI** — For the agent framework
+- **Google Gemini** — For the LLM API
+- **Streamlit** — For the UI framework
+
+---
+
+## Questions?
+
+If you have questions about this project, refer to:
+- The individual exercise files for concept explanations
+- The `agent.py` file for implementation details
+- The `app.py` file for UI logic

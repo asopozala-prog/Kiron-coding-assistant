@@ -1,0 +1,57 @@
+# LEGAL CASE FILE TEMPLATE
+
+**Case ID:** 1234/2024
+
+**Case Type:** _______________
+
+**Date Opened:** _______________
+
+## Parties Involved
+
+**Client Name:** Schmidt GmbH
+
+**Client Contact:** info@schmidtgmbh.de
+
+**Opposing Party:** _______________
+
+**Opposing Party Contact:** _______________
+
+## Case Details
+
+**Matter Description:** _______________
+
+**Key Issue:** _______________
+
+**Contract/Agreement Date:** _______________
+
+**Amount in Dispute:** _______________
+
+## Timeline
+
+| Date | Event | Notes |
+|------|-------|-------|
+| | | |
+| | | |
+| | | |
+
+## Documents on File
+
+- [ ] Contract/Agreement
+- [ ] Correspondence from opposing party
+- [ ] Court letters
+- [ ] Internal communications
+- [ ] Other: _______________
+
+## Current Status
+
+**Status:** _______________
+
+**Next Action:** _______________
+
+**Responsible Attorney:** _______________
+
+**Last Updated:** _______________
+
+## Notes
+
+_______________

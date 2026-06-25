@@ -1,0 +1,50 @@
+cat > legal_files/messy_case_data.txt << 'EOF'
+SERVICE AGREEMENT - MESSY CASE DATA
+
+Email 1 - From: thomas.weber@opposing-firm.de
+Date: 15 March 2024
+Subject: Contract breach - Payment dispute
+
+Our client Markus Richter claims that Schmidt GmbH failed to deliver services as outlined in the agreement from January 2023. The contract value was €45,000. Payment was supposed to be made in two installments: €22,500 in February and €22,500 in April. Only the first payment was made.
+
+---
+
+Court Letter - Amtsgericht Berlin-Mitte
+Reference: 1234/2024
+Case filed 22 March 2024
+Plaintiff: Markus Richter
+Defendant: Schmidt GmbH
+
+---
+
+Internal Notes from Supervisor Meeting:
+- Client = Schmidt GmbH (our client)
+- Opposing = Markus Richter
+- Contract signed January 12, 2023
+- Services delivery completed by March 2023
+- First payment received Feb 15
+- Second payment never arrived (€22,500 still owed)
+- Court date not yet set
+
+---
+
+Email 2 - From: info@schmidtgmbh.de
+Date: 18 March 2024
+Documents attached: Invoice copy, Delivery confirmation, Email from Markus saying "services received, very satisfied"
+
+---
+
+Email 3 - From: markus.richter@email.de
+Date: 10 April 2024
+"I never received the second invoice. How am I supposed to pay if I don't get an invoice?"
+
+---
+
+Summary of Documents:
+- Original contract (Jan 12, 2023)
+- Invoice 1 (Jan 20, 2023) - €22,500 - PAID
+- Invoice 2 (Feb 28, 2023) - €22,500 - UNPAID
+- Delivery confirmation (signed, March 15, 2023)
+- Email chain (5 emails)
+- Bank statement showing first payment received
+EOF

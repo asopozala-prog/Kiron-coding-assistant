@@ -1,5 +1,3 @@
-# agent.py - Unified agent with all 6 exercises combined
-
 import asyncio
 from dotenv import load_dotenv
 import os
@@ -19,44 +17,141 @@ load_dotenv()
 provider = GoogleProvider(api_key=os.getenv("GEMINI_API_KEY"))
 model = GoogleModel("gemini-2.5-flash", provider=provider)
 
+WORK_DIR = Path(__file__).parent / "legal_files" / "work_files"
 
-# ============================================================================
-# TOOLS (Exercises 1-3)
-# ============================================================================
+FILE_ALIASES = {
+    "messy case data": "messy_case_data.txt",
+    "messy data": "messy_case_data.txt",
+    "case data": "messy_case_data.txt",
+    "messy": "messy_case_data.txt",
+    "template": "case_file_template.txt",
+    "case file": "case_file_template.txt",
+    "case template": "case_file_template.txt",
+    "sample contract": "sample_contract.md",
+    "contract": "sample_contract.md",
+    "sample": "sample_contract.md",
+}
 
-def read_file(path: str) -> str:
-    """Read the contents of a file at the given path."""
-    with open(path) as f:
-        return f.read()
+def resolve_filename(user_mention: str) -> str:
+    text = user_mention.lower().strip()
+
+    if text in FILE_ALIASES:
+        return FILE_ALIASES[text]
+
+    for alias, filename in FILE_ALIASES.items():
+        if alias in text:
+            return filename
+
+    return user_mention
 
 
-def write_file(path: str, content: str) -> str:
-    """Write content to a file at the given path."""
-    with open(path, "w") as f:
-        f.write(content)
-    return f"File written: {path}"
+def find_best_match(query: str) -> str | None:
+    """Find the best matching file in work_files by keyword similarity."""
+    query = query.lower().strip()
+    words = [w for w in query.replace("_", " ").split() if len(w) > 2]
+
+    if not words:
+        return None
+
+    candidates = []
+    for path in WORK_DIR.iterdir():
+        if not path.is_file():
+            continue
+
+        name = path.name.lower()
+        score = sum(1 for word in words if word in name)
+
+        if score > 0:
+            candidates.append((score, path.name))
+
+    if not candidates:
+        return None
+
+    candidates.sort(reverse=True)
+    return candidates[0][1]
+
+
+def _safe_path(filename: str) -> Path:
+    filename = filename.replace("\\", "/").strip()
+    filename = os.path.basename(filename)
+    path = (WORK_DIR / filename).resolve()
+    work_root = WORK_DIR.resolve()
+
+    if work_root not in path.parents and path != work_root:
+        raise ValueError("Access denied. Files must stay inside work_files.")
+    return path
+
+
+def read_file(filename: str) -> str:
+    """Read the contents of a file in work_files."""
+    actual_filename = resolve_filename(filename)
+    
+    if actual_filename == filename:
+        best = find_best_match(filename)
+        if best:
+            actual_filename = best
+    
+    file_path = _safe_path(actual_filename)
+
+    try:
+        return file_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return f"Error: File '{actual_filename}' not found."
+    except Exception as e:
+        return f"Error reading file '{actual_filename}': {e}"
+
+
+def write_file(filename: str, content: str) -> str:
+    """Write content to a file in work_files."""
+    actual_filename = resolve_filename(filename)
+    
+    if actual_filename == filename:
+        best = find_best_match(filename)
+        if best:
+            actual_filename = best
+    
+    file_path = _safe_path(actual_filename)
+
+    try:
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.write_text(content, encoding="utf-8")
+        return f"File written: {actual_filename}"
+    except Exception as e:
+        return f"Error writing file '{actual_filename}': {e}"
 
 
 def search_files(pattern: str) -> list[str]:
-    """Search for files matching a glob pattern."""
-    return [str(p) for p in Path(".").glob(pattern)]
+    """Search for files in work_files."""
+    pattern = pattern.strip()
+    matches = []
+    for p in WORK_DIR.glob(pattern):
+        if p.is_file():
+            matches.append(p.name)
+    return sorted(matches)
 
 
-def delete_file(path: str) -> str:
-    """Delete a file at the given path."""
-    os.remove(path)
-    return f"File deleted: {path}"
+def delete_file(filename: str) -> str:
+    """Delete a file in work_files."""
+    actual_filename = resolve_filename(filename)
+    
+    if actual_filename == filename:
+        best = find_best_match(filename)
+        if best:
+            actual_filename = best
+    
+    file_path = _safe_path(actual_filename)
+
+    try:
+        file_path.unlink()
+        return f"File deleted: {actual_filename}"
+    except FileNotFoundError:
+        return f"Error: File '{actual_filename}' not found."
+    except Exception as e:
+        return f"Error deleting file '{actual_filename}': {e}"
 
 
 def load_skill(skill_name: str) -> str:
-    """Load the instructions for a named skill.
-    
-    Args:
-        skill_name: The filename (without .md) of the skill to load.
-    
-    Returns:
-        The full content of the skill file as a string.
-    """
+    """Load a skill from skills/."""
     path = Path("skills") / f"{skill_name}.md"
     if not path.exists():
         return f"Skill '{skill_name}' not found."
@@ -64,13 +159,7 @@ def load_skill(skill_name: str) -> str:
     return skill.content
 
 
-# ============================================================================
-# CAPABILITIES (Exercises 3-6)
-# ============================================================================
-
 class FileOperations(AbstractCapability[Any]):
-    """Exercise 3: File system tools + Exercise 4: Execution hooks"""
-    
     def get_toolset(self) -> FunctionToolset:
         toolset = FunctionToolset()
         toolset.add_function(read_file)
@@ -78,7 +167,7 @@ class FileOperations(AbstractCapability[Any]):
         toolset.add_function(search_files)
         toolset.add_function(delete_file)
         return toolset
-    
+
     async def before_tool_execute(
         self,
         ctx: RunContext[Any],
@@ -87,101 +176,75 @@ class FileOperations(AbstractCapability[Any]):
         tool_def: ToolDefinition,
         args: dict[str, Any],
     ) -> dict[str, Any]:
-        """Exercise 4: Log tool calls in real time"""
-        print(f"→ Calling tool: {call.tool_name}")
-        print(f"  Args: {args}")
+        print(f"-> Calling tool: {call.tool_name}")
+        print(f"   Args: {args}")
         return args
 
 
-class ReasoningEffort(AbstractCapability[Any]):
-    """Exercise 5: Dynamic reasoning effort based on task complexity"""
-    
-    def get_model_settings(self) -> Callable[[RunContext[Any]], ModelSettings]:
-        def _set_reasoning_effort(ctx: RunContext[Any]) -> ModelSettings:
-            prompt = ctx.prompt or ""
-            
-            # Simple: short prompts or keywords like "quick", "simple"
-            if len(prompt) < 50 or any(
-                word in prompt.lower() for word in ["simple", "quick", "short", "list"]
-            ):
-                effort = "low"
-            # Complex: longer prompts or keywords like "explain", "analyse", "debug"
-            elif any(
-                word in prompt.lower() for word in ["complex", "explain", "analyse", "debug", "why", "how"]
-            ):
-                effort = "high"
-            else:
-                effort = "medium"
-            
-            print(f"[Reasoning effort: {effort}]")
-            return ModelSettings(thinking=effort)
-        
-        return _set_reasoning_effort
-
-
 class Skills(AbstractCapability[Any]):
-    """Exercise 6: Dynamic skill loading from markdown files"""
-    
-    def get_instructions(self) -> str:
-        """Append available skills to system prompt"""
+    def get_instructions(self, ctx: RunContext[Any] | None = None) -> str:
         skills_dir = Path("skills")
         if not skills_dir.exists():
             return ""
-        
-        lines = ["Available skills (use load_skill() to load one when relevant):\n"]
+
+        lines = [
+            "Available skills: use load_skill(skill_name) when relevant. "
+            "Loaded skills should guide how you work.\n"
+        ]
+
         for filename in skills_dir.glob("*.md"):
             try:
                 skill = frontmatter.load(filename)
                 name = skill.metadata.get("name", filename.stem)
                 description = skill.metadata.get("description", "No description.")
-                lines.append(f"- **{name}**: {description}")
+                lines.append(f"- {name}: {description}")
             except Exception as e:
                 print(f"Warning: Could not load skill {filename}: {e}")
-        
-        return "\n".join(lines) if len(lines) > 1 else ""
-    
+
+        return "\n".join(lines)
+
     def get_toolset(self) -> FunctionToolset:
-        """Expose load_skill tool"""
         toolset = FunctionToolset()
         toolset.add_function(load_skill)
         return toolset
 
 
-# ============================================================================
-# UNIFIED AGENT (All 6 exercises)
-# ============================================================================
-
 agent = Agent(
     model=model,
-    instructions="""You are a helpful Python coding assistant with file system access.
+    instructions="""You are Kiron, a helpful legal document assistant for Alex.
 
-You can:
-- Read, write, search, and delete files
-- Remember previous conversations
-- Adjust your reasoning depth based on task complexity
-- Load and apply specialized skills when needed
+Alex works in a legal office and uses you to handle confidential files locally.
 
-Always be clear about what you're doing and ask for confirmation before deleting files.""",
-    capabilities=[FileOperations(), ReasoningEffort(), Skills()],
+CRITICAL: When Alex mentions a file, ALWAYS call the file tool immediately.
+Do not ask for clarification. The tools will resolve the filename.
+
+Examples:
+- "read messy case data" → call read_file("messy case data")
+- "create case template" → call write_file("case template", ...)
+- "delete sample contract" → call delete_file("sample contract")
+
+Rules:
+- Use the work_files folder as the default workspace.
+- Call file tools with whatever name Alex uses.
+- The tools will map it to the correct file.
+- Never ask "what is the exact filename?"
+- Be direct and action-oriented.
+- Keep the tone friendly, clear, and practical.""",
+    capabilities=[FileOperations(), Skills()],
 )
 
 
-# ============================================================================
-# INTERACTIVE LOOP (Exercise 2: Conversation state)
-# ============================================================================
-
 async def main():
-    """Run the agent in interactive mode with conversation history"""
     history = []
     print("🦕 Kiron Coding Assistant")
     print("Type 'exit' or 'quit' to stop.\n")
-    
+
     while True:
         user_input = input("You: ")
         if user_input.lower() in ["exit", "quit"]:
             print("Goodbye!")
             break
-        
+
         try:
             result = await agent.run(user_input, message_history=history)
             history = result.all_messages()
