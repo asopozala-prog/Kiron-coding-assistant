@@ -54,7 +54,4 @@ For a real law firm deployment: swap Gemini for a local model via Ollama or LM S
 
 ---
 
-## Built by Our Programmer
-**GitHub:** asopozala-prog/Kiron-coding-assistant
-
 Part of the THRIVE Agentic AI portfolio — built for Alex, finished in a heatwave, shipped with a smile. 🦕

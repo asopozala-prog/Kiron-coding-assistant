@@ -226,7 +226,7 @@ elif st.session_state.page == "Why Alex Need Kiron":
     col1, col2 = st.columns(2, gap="large")
 
     with col1:
-        st.image("legal_files/Alex_Cafe.png", width="stretch")
+        st.image("legal_files/alex_cafe.jpg", width="stretch")
         st.caption("Coffee (the pause)")
         st.image("legal_files/alex_bar.jpg", width="stretch")
         st.caption("Bar night (being present)")
@@ -243,6 +243,11 @@ elif st.session_state.page == "How Kiron Was Built":
     st.image("legal_files/kiron_programmer.jpg", width="stretch")
     st.divider()
     render_markdown_file("legal_files/kiron_programmer.md")
+    st.markdown("**Built by Our Programmer**")
+    st.markdown(
+        'GitHub: <a href="https://github.com/asopozala-prog/Kiron-coding-assistant" target="_blank">asopozala-prog/Kiron-coding-assistant</a>',
+        unsafe_allow_html=True,
+    )
 
 # PAGE 4: Chat with Kiron (with file viewer and Kiron image)
 elif st.session_state.page == "Alex work with Kiron":
