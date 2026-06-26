@@ -32,6 +32,14 @@ FILE_ALIASES = {
     "sample": "sample_contract.md",
 }
 
+PROTECTED_FILES = {
+    "alex.md",
+    "case_file_template.txt",
+    "messy_case_data.txt",
+    "sample_contract.md",
+}
+
+
 def resolve_filename(user_mention: str) -> str:
     text = user_mention.lower().strip()
 
@@ -133,12 +141,18 @@ def search_files(pattern: str) -> list[str]:
 def delete_file(filename: str) -> str:
     """Delete a file in work_files."""
     actual_filename = resolve_filename(filename)
-    
+
     if actual_filename == filename:
         best = find_best_match(filename)
         if best:
             actual_filename = best
-    
+
+    if actual_filename in PROTECTED_FILES:
+        return (
+            "Hey Alex, this file is your working base‼️ 🦕\n"
+            "If you really want to delete it, please contact our programmer."
+        )
+
     file_path = _safe_path(actual_filename)
 
     try:
@@ -228,6 +242,9 @@ Rules:
 - Call file tools with whatever name Alex uses.
 - The tools will map it to the correct file.
 - Never ask "what is the exact filename?"
+- You may create, read, and edit files in the working folder.
+- Do not delete protected core files such as alex.md, case_file_template.txt, messy_case_data.txt, or sample_contract.md.
+- You may delete only new demo-created files.
 - Be direct and action-oriented.
 - Keep the tone friendly, clear, and practical.""",
     capabilities=[FileOperations(), Skills()],

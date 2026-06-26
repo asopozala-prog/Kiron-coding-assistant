@@ -34,16 +34,23 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-PAGES = ["About Alex", "Chat with Kiron"]
+PAGES = [
+    "Meet Alex Hoffmann",
+    "Why Alex Need Kiron",
+    "How Kiron Was Built",
+    "Alex work with Kiron",
+]
 PAGE_QUERY_VALUES = {
-    "About Alex": "about",
-    "Chat with Kiron": "chat",
+    "Meet Alex Hoffmann": "about",
+    "Why Alex Need Kiron": "why",
+    "How Kiron Was Built": "built",
+    "Alex work with Kiron": "chat",
 }
 PAGE_FROM_QUERY = {value: page for page, value in PAGE_QUERY_VALUES.items()}
 
 # Initialize session state
 if "page" not in st.session_state:
-    st.session_state.page = "About Alex"
+    st.session_state.page = "Meet Alex Hoffmann"
 
 query_page = st.query_params.get("page")
 if query_page in PAGE_FROM_QUERY:
@@ -75,121 +82,170 @@ def run_agent(user_input):
     )
 
 
+def render_markdown_file(path_str, fallback_text=""):
+    path = Path(path_str)
+    if path.exists():
+        st.markdown(path.read_text())
+    elif fallback_text:
+        st.markdown(fallback_text)
+    else:
+        st.info(f"{path.name} not found")
+
+
 # Sidebar navigation
 with st.sidebar:
     st.title("🦕 Kiron")
+    current_page = st.session_state.page if st.session_state.page in PAGES else "Meet Alex Hoffmann"
     page = st.radio(
         "Navigate",
         PAGES,
-        index=PAGES.index(st.session_state.page),
+        index=PAGES.index(current_page),
         label_visibility="collapsed",
     )
     st.session_state.page = page
     st.query_params["page"] = PAGE_QUERY_VALUES[page]
 
 # PAGE 1: About Alex (Home)
-if st.session_state.page == "About Alex":
+if st.session_state.page == "Meet Alex Hoffmann":
     col1, col2 = st.columns(2, gap="large")
-    
+
     with col1:
         st.image("legal_files/alex_in_office.jpg", width="stretch")
-    
+
     with col2:
         st.title("Meet Alex Hoffmann")
         st.markdown("""
         **Junior Legal Assistant** | Berlin, Germany | 4 years experience
-        
+
         ---
-        
+
         ### The Challenge
-        
+
         Alex manages confidential documents for a law firm. His day is filled with:
         - Organizing case files from multiple sources
         - Categorizing sensitive documents
         - Preparing files for supervising lawyers
         - Maintaining secure archives
-        
+
         It's **precise work**, but it's **repetitive**. 60% of his day is spent on tasks that require accuracy but no creativity.
-        
+
         **The real cost?** Mental energy that could be spent on his own life.
-        
+
         ---
-        
+
         ### The Solution
-        
+
         **Kiron** — a local AI assistant that:
         - Reads and organizes documents **locally** (no cloud uploads)
         - Extracts key information automatically
         - Summarizes contracts in seconds
         - Identifies risks and issues
         - Respects confidentiality completely
-        
+
         All through a simple chat interface. No coding required.
-        
+
         ---
-        
+
         ### Why Local?
-        
+
         Confidential client documents **never leave the office**. Everything runs on Alex's machine. Everything stays secure.
         """)
-    
+
     st.divider()
-    
+
     st.subheader("How Kiron Helps")
-    
+
     col1, col2, col3 = st.columns(3, gap="large")
-    
+
     with col1:
         st.markdown("""
         ### 📄 Organize
-        
+
         Ask Kiron to:
         - Create file structures
         - Search for documents
         - Categorize by type
         """)
-    
+
     with col2:
         st.markdown("""
         ### 🔍 Analyze
-        
+
         Ask Kiron to:
         - Extract key dates
         - Identify parties
         - Find critical clauses
         """)
-    
+
     with col3:
         st.markdown("""
         ### ⚠️ Review
-        
+
         Ask Kiron to:
         - Spot missing signatures
         - Flag unusual terms
         - Identify risks
         """)
-    
+
     st.divider()
-    
+
     # Ready to help section
     st.markdown("""
     ### Ready to Get Started?
-    
+
     Kiron is ready to help Alex organize his confidential documents.
-    
+
     **Let's see Kiron in action.**
     """)
-    
+
     # Clickable link with custom button styling
     col1, col2, col3 = st.columns(3, gap="large")
     with col2:
         st.markdown(
-            '<a class="chat-link-button" href="?page=chat">💬 Chat with Kiron</a>',
+            '<a class="chat-link-button" href="?page=chat">💬 Alex work with Kiron</a>',
             unsafe_allow_html=True,
         )
 
-# PAGE 2: Chat with Kiron (with file viewer and Kiron image)
-elif st.session_state.page == "Chat with Kiron":
+# PAGE 2: Why Alex Need Kiron
+elif st.session_state.page == "Why Alex Need Kiron":
+    st.title("Why Alex Need Kiron")
+
+    st.subheader("The work dilemma")
+    col1, col2 = st.columns(2, gap="large")
+
+    with col1:
+        render_markdown_file("legal_files/Statement_to_Programmer.md")
+
+    with col2:
+        st.image("legal_files/alex_overwork.jpg", width="stretch")
+        st.caption("Overwork (the reality)")
+
+    st.divider()
+
+    st.subheader("The life he wants")
+    col1, col2 = st.columns(2, gap="large")
+
+    with col1:
+        st.image("legal_files/Alex_Cafe.png", width="stretch")
+        st.caption("Coffee (the pause)")
+        st.image("legal_files/alex_bar.jpg", width="stretch")
+        st.caption("Bar night (being present)")
+
+    with col2:
+        render_markdown_file(
+            "legal_files/alex_wanted_life.md",
+            fallback_text="Alex wants a life with more presence, calm, and time for what matters.",
+        )
+
+# PAGE 3: How Kiron Was Built
+elif st.session_state.page == "How Kiron Was Built":
+    st.title("How Kiron Was Built")
+    st.image("legal_files/kiron_programmer.jpg", width="stretch")
+    st.divider()
+    render_markdown_file("legal_files/kiron_programmer.md")
+
+# PAGE 4: Chat with Kiron (with file viewer and Kiron image)
+elif st.session_state.page == "Alex work with Kiron":
     st.title("🦕 Kiron Coding Assistant")
 
     col_chat, col_files = st.columns(2, gap="large")
@@ -243,7 +299,10 @@ Everything stays local. Nothing leaves your machine.
     with col_files:
         st.image("legal_files/alex_kiron.jpg", width="stretch")
         st.divider()
-        st.subheader("📁 Files")
+        st.subheader("📁 Alex’s working folder")
+        st.markdown(
+            "everything you see here lives inside an protected folder. When Alex chats with Kiron, Kiron reads and updates these files in real time—so if you ask Kiron to create or edit a document, you’ll see it appear or change here. For safety, Kiron is sandboxed to this folder only and cannot access anything else on the computer."
+        )
 
         legal_files_path = Path("legal_files/work_files")
         if legal_files_path.exists():
@@ -254,7 +313,7 @@ Everything stays local. Nothing leaves your machine.
 
             if files:
                 selected_file = st.selectbox(
-                    "View file:",
+                    "View a file in Alex’s working folder:",
                     files,
                     format_func=lambda x: x.name,
                     label_visibility="collapsed"
