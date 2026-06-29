@@ -191,6 +191,14 @@ with st.sidebar:
     st.session_state.page = page
     st.query_params["page"] = PAGE_QUERY_VALUES[page]
 
+    st.divider()
+    st.subheader("🦕 Try the Conversation Prototype")
+    st.caption("Experience Kiron's modular conversation system powered by a local-first architecture.")
+    st.markdown(
+        '<a class="chat-link-button" href="https://kiron-coding-assistant-gpvua97y6bynoorja2cu8r.streamlit.app/" target="_blank" rel="noopener noreferrer">Open Conversation Prototype</a>',
+        unsafe_allow_html=True,
+    )
+
 # PAGE 1: About Alex (Home)
 if st.session_state.page == "Meet Alex Hoffmann":
     col1, col2 = st.columns(2, gap="large")
