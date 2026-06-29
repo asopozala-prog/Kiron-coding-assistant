@@ -324,3 +324,48 @@ When something breaks:
 ---
 
 **Last updated:** 2026-06-27
+## Debugging Case: False ImportError Caused by Stale Streamlit Process
+
+### Symptom
+
+After simplifying the portfolio app to use only `alex_kiron_office_chat_handler.py`, Streamlit reported:
+
+```
+ImportError: cannot import name 'RUN_AGENT' from 'src.alex_kiron_office_chat_handler'
+```
+
+### Investigation
+
+Ground Truth verification showed:
+
+* `RUN_AGENT` existed in `alex_kiron_office_chat_handler.py`.
+* `grep` confirmed the constant was present.
+* Importing the symbol directly from the terminal succeeded:
+
+```python
+from src.alex_kiron_office_chat_handler import RUN_AGENT
+```
+
+Therefore the module itself was valid.
+
+### Root Cause
+
+The error was **not** caused by the source code.
+
+A stale Streamlit process was still using an outdated module state.
+
+### Resolution
+
+Terminate all running Streamlit processes completely before restarting the application.
+
+After a clean restart, the import succeeded and the application behaved correctly.
+
+### Lesson Learned
+
+When an ImportError contradicts direct Python import tests:
+
+1. Verify the symbol exists in the source file.
+2. Verify Python can import it directly.
+3. If both succeed, suspect a stale Streamlit process before modifying code.
+
+Do not assume every ImportError is a coding error.

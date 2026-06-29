@@ -4,10 +4,11 @@ import streamlit as st
 import asyncio
 from agent import agent
 from pathlib import Path
-from src.alex_qa_handler import handle_alex_qa
-from src.entry_rules import handle_entry
-from src.kiron_mode_handler import handle_kiron_mode
-from src.menu_handler import handle_menu_choice
+from src.alex_kiron_office_chat_handler import (
+    RUN_AGENT,
+    office_intro,
+    handle_office_chat,
+)
 from src.work_mode_handler import handle_work_mode
 
 import os
@@ -76,6 +77,9 @@ if "work_unclear_count" not in st.session_state:
 if "kiron_warned" not in st.session_state:
     st.session_state.kiron_warned = False
 
+if "office_mode" not in st.session_state:
+    st.session_state.office_mode = "start"
+
 
 def run_agent(user_input):
     try:
@@ -94,62 +98,6 @@ def run_agent(user_input):
             message_history=st.session_state.history
         )
     )
-
-
-def route_kiron_chat(user_input):
-    mode = st.session_state.mode
-
-    if user_input.strip().lower() == "exit":
-        st.session_state.mode = "entry"
-        st.session_state.work_unclear_count = 0
-        st.session_state.kiron_warned = False
-        return "Goodbye."
-
-    if mode == "entry":
-        next_mode, response = handle_entry(user_input)
-        st.session_state.mode = next_mode
-        st.session_state.work_unclear_count = 0
-        st.session_state.kiron_warned = False
-        return response
-
-    if mode == "menu":
-        next_mode, response = handle_menu_choice(user_input)
-        st.session_state.mode = next_mode
-        st.session_state.work_unclear_count = 0
-        st.session_state.kiron_warned = False
-        return response
-
-    if mode == "work_mode":
-        next_mode, response, unclear_count = handle_work_mode(
-            user_input,
-            st.session_state.work_unclear_count,
-        )
-        st.session_state.mode = next_mode
-        st.session_state.work_unclear_count = unclear_count
-
-        if unclear_count == 0 and next_mode == "work_mode":
-            result = run_agent(user_input)
-            st.session_state.history = result.all_messages()
-            return result.output
-
-        return response
-
-    if mode == "kiron_mode":
-        next_mode, response, kiron_warned = handle_kiron_mode(
-            user_input,
-            st.session_state.kiron_warned,
-        )
-        st.session_state.mode = next_mode
-        st.session_state.kiron_warned = kiron_warned
-        return response
-
-    if mode == "alex_qa":
-        return handle_alex_qa(user_input)
-
-    st.session_state.mode = "entry"
-    st.session_state.work_unclear_count = 0
-    st.session_state.kiron_warned = False
-    return "Let's start again. Tell me what you would like to do."
 
 
 def render_markdown_file(path_str, fallback_text=""):
@@ -354,18 +302,7 @@ elif st.session_state.page == "Alex work with Kiron":
 
         if len(st.session_state.messages) == 0:
             with st.chat_message("assistant", avatar="🦕"):
-                st.markdown("""
-Hello Alex! 👋 I'm **Kiron**, your friendly dinosaur assistant.
-
-I can help you work with the files in your local work folder. Try asking me to:
-
-- read the messy case data
-- fill the case file template
-- create or delete a working file
-- summarize a document
-
-Everything stays local. Nothing leaves your machine.
-""")
+                st.markdown(office_intro())
 
         for message in st.session_state.messages:
             if message["role"] == "user":
@@ -385,11 +322,27 @@ Everything stays local. Nothing leaves your machine.
             with st.chat_message("assistant", avatar="🦕"):
                 with st.spinner("Thinking..."):
                     try:
-                        response = clean_chat_response(route_kiron_chat(user_input))
-                        st.markdown(response)
-                        st.session_state.messages.append(
-                            {"role": "assistant", "content": response}
+                        next_mode, response, work_unclear_count = handle_office_chat(
+                            user_input,
+                            st.session_state.office_mode,
+                            st.session_state.work_unclear_count,
                         )
+                        st.session_state.office_mode = next_mode
+                        st.session_state.work_unclear_count = work_unclear_count
+
+                        if response == RUN_AGENT:
+                            result = run_agent(user_input)
+                            st.session_state.history = result.all_messages()
+                            response_text = result.output
+                            st.markdown(response_text)
+                            st.session_state.messages.append(
+                                {"role": "assistant", "content": response_text}
+                            )
+                        else:
+                            st.markdown(response)
+                            st.session_state.messages.append(
+                                {"role": "assistant", "content": response}
+                            )
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
 
