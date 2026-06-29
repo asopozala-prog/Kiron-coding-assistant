@@ -4,6 +4,11 @@ import streamlit as st
 import asyncio
 from agent import agent
 from pathlib import Path
+from src.alex_qa_handler import handle_alex_qa
+from src.entry_rules import handle_entry
+from src.kiron_mode_handler import handle_kiron_mode
+from src.menu_handler import handle_menu_choice
+from src.work_mode_handler import handle_work_mode
 
 import os
 print(f"DEBUG: GEMINI_API_KEY = {os.getenv('GEMINI_API_KEY')}")
@@ -62,6 +67,15 @@ if "messages" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
+if "mode" not in st.session_state:
+    st.session_state.mode = "entry"
+
+if "work_unclear_count" not in st.session_state:
+    st.session_state.work_unclear_count = 0
+
+if "kiron_warned" not in st.session_state:
+    st.session_state.kiron_warned = False
+
 
 def run_agent(user_input):
     try:
@@ -82,6 +96,62 @@ def run_agent(user_input):
     )
 
 
+def route_kiron_chat(user_input):
+    mode = st.session_state.mode
+
+    if user_input.strip().lower() == "exit":
+        st.session_state.mode = "entry"
+        st.session_state.work_unclear_count = 0
+        st.session_state.kiron_warned = False
+        return "Goodbye."
+
+    if mode == "entry":
+        next_mode, response = handle_entry(user_input)
+        st.session_state.mode = next_mode
+        st.session_state.work_unclear_count = 0
+        st.session_state.kiron_warned = False
+        return response
+
+    if mode == "menu":
+        next_mode, response = handle_menu_choice(user_input)
+        st.session_state.mode = next_mode
+        st.session_state.work_unclear_count = 0
+        st.session_state.kiron_warned = False
+        return response
+
+    if mode == "work_mode":
+        next_mode, response, unclear_count = handle_work_mode(
+            user_input,
+            st.session_state.work_unclear_count,
+        )
+        st.session_state.mode = next_mode
+        st.session_state.work_unclear_count = unclear_count
+
+        if unclear_count == 0 and next_mode == "work_mode":
+            result = run_agent(user_input)
+            st.session_state.history = result.all_messages()
+            return result.output
+
+        return response
+
+    if mode == "kiron_mode":
+        next_mode, response, kiron_warned = handle_kiron_mode(
+            user_input,
+            st.session_state.kiron_warned,
+        )
+        st.session_state.mode = next_mode
+        st.session_state.kiron_warned = kiron_warned
+        return response
+
+    if mode == "alex_qa":
+        return handle_alex_qa(user_input)
+
+    st.session_state.mode = "entry"
+    st.session_state.work_unclear_count = 0
+    st.session_state.kiron_warned = False
+    return "Let's start again. Tell me what you would like to do."
+
+
 def render_markdown_file(path_str, fallback_text=""):
     path = Path(path_str)
     if path.exists():
@@ -90,6 +160,22 @@ def render_markdown_file(path_str, fallback_text=""):
         st.markdown(fallback_text)
     else:
         st.info(f"{path.name} not found")
+
+
+def clean_chat_response(response):
+    if not isinstance(response, str):
+        return response
+
+    cleaned_lines = []
+    for line in response.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("[") and "]" in stripped:
+            continue
+        cleaned_lines.append(stripped)
+
+    return "\n".join(cleaned_lines).strip()
 
 
 # Sidebar navigation
@@ -291,9 +377,7 @@ Everything stays local. Nothing leaves your machine.
             with st.chat_message("assistant", avatar="🦕"):
                 with st.spinner("Thinking..."):
                     try:
-                        result = run_agent(user_input)
-                        response = result.output
-                        st.session_state.history = result.all_messages()
+                        response = clean_chat_response(route_kiron_chat(user_input))
                         st.markdown(response)
                         st.session_state.messages.append(
                             {"role": "assistant", "content": response}

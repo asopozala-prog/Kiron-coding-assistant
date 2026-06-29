@@ -2,4 +2,8 @@
 .venv/
 *.png
 __pycache__/
-__pycache__/
+kiron_router/
+# Local LLM models
+models/
+# Local LLM models
+models/**/*.gguf

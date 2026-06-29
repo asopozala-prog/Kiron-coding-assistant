@@ -13,9 +13,9 @@ This project is framed as a story:
 
 ## Live Demo
 
-If you deployed it on Streamlit Community Cloud, add your link here:
+deployed on Streamlit Community Cloud:
 
-- **Demo:** (paste your Streamlit URL)
+- **Demo:** ([https://kiron-coding-assistant-x3d9klzag52v4rc92zress.streamlit.app/?page=about])
 
 > Note: Streamlit Cloud still uses a cloud API key in this demo. In a real office deployment, you would swap the model backend to a local LLM.
 
@@ -179,6 +179,135 @@ Kiron-coding-assistant/
 ```
 
 ---
+
+# Modular Conversation and Retrieval Architecture
+
+The project has evolved beyond a simple local file agent into a modular **local conversational AI architecture**.
+
+Instead of relying on one general-purpose language model, Kiron now separates the system into independent components, each responsible for a specific task.
+
+## Conversation Engine
+
+The conversation flow is now managed entirely by Python.
+
+The engine maintains conversation state and routes each user request into one of three specialized modes:
+
+* 📄 Work with files
+* 🦕 Learn about Kiron
+* 👤 Learn about Alex
+
+This design keeps the conversation deterministic while allowing each domain to evolve independently.
+
+---
+
+## Domain-Specific Retrieval
+
+Rather than using a single generic RAG pipeline, Kiron uses dedicated retrievers for different knowledge domains.
+
+### Alex Retriever
+
+Alex's knowledge base is organized into structured topic documents.
+
+Each topic contains:
+
+* Summary
+* Key facts
+* Narrative
+* Related topics
+* Retrieval tags
+
+MiniLM performs semantic retrieval using the retrieval tags, while Python prepares a minimal context for the language model.
+
+### Kiron Retriever
+
+Kiron follows a different retrieval strategy.
+
+For broad questions, MiniLM retrieves the most relevant documentation chunks.
+
+For core topics such as:
+
+* Who created Kiron?
+* How does Kiron work?
+* Why was Kiron designed?
+
+the conversation engine returns complete technical articles directly.
+
+This demonstrates that different knowledge domains can use different retrieval strategies without changing the overall architecture.
+
+---
+
+## Local Language Model
+
+The retrieved knowledge is transformed into natural language by a lightweight local language model.
+
+Current implementation:
+
+* **llama.cpp**
+* **llama-server**
+* **Qwen2.5-1.5B-Instruct (GGUF)**
+
+The language model is responsible only for rewriting retrieved knowledge into concise conversational answers.
+
+It does not perform retrieval itself.
+
+---
+
+## Complete Local Pipeline
+
+```
+User
+    │
+    ▼
+Conversation Router
+    │
+    ▼
+Domain-specific Retriever
+    │
+    ▼
+MiniLM Semantic Search
+    │
+    ▼
+Retrieved Knowledge
+    │
+    ▼
+llama-server
+    │
+    ▼
+Qwen2.5-1.5B
+    │
+    ▼
+Natural Language Response
+```
+
+This architecture allows every component to evolve independently.
+
+Retrievers, language models, and user interfaces can all be replaced without redesigning the overall system.
+
+---
+
+## Conversation Prototype
+
+A second Streamlit application, `conversation_app.py`, has been introduced as a clean prototype for the new architecture.
+
+Unlike the original demonstration app, the prototype focuses entirely on validating the conversation engine and retrieval pipeline.
+
+This approach allows rapid experimentation while keeping the original showcase application stable.
+
+---
+
+## Development Philosophy
+
+The project follows an iterative engineering approach.
+
+Rather than attempting to build a complete AI assistant in one step, each milestone introduces one production-oriented capability:
+
+* local document agent
+* structured retrieval
+* domain-specific RAG
+* local language model
+* conversational routing
+
+Each milestone remains fully documented inside the `docs/development/` folder, providing a complete engineering history of the project.
 
 ## Credits
 
