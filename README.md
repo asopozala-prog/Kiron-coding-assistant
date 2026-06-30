@@ -314,3 +314,204 @@ Each milestone remains fully documented inside the `docs/development/` folder, p
 Built by Mei as a THRIVE optional portfolio project.
 
 - GitHub: https://github.com/asopozala-prog/Kiron-coding-assistant
+
+# 04 – Testing Strategy
+
+## Purpose
+
+Kiron is developed using a staged testing strategy.
+
+The objective is to verify deterministic software behavior first, then progressively validate integration with retrieval systems, local language models, and the complete application.
+
+This approach keeps development fast, reduces debugging complexity, and protects existing functionality as the project grows.
+
+---
+
+# Current Status
+
+Current milestone:
+
+**Phase 1 — Unit Testing**
+
+Status:
+
+**In Progress**
+
+Current verified result:
+
+**27 passing unit tests**
+
+---
+
+# Testing Roadmap
+
+## Phase 1 — Unit Tests
+
+Objective:
+
+Protect deterministic business logic.
+
+External services are not required.
+
+Covered modules:
+
+- ✅ task_validator.py
+- ✅ work_mode_handler.py
+- ✅ entry_rules.py
+- ✅ menu_handler.py
+- ✅ kiron_mode_handler.py
+- ✅ alex_qa_handler.py
+
+Remaining candidates:
+
+- kiron_qa_handler.py
+- kiron_router_pipeline.py
+
+Typical techniques:
+
+- pytest
+- unittest.mock
+- temporary workspaces
+- deterministic assertions
+
+Protected behaviors include:
+
+- conversation entry rules
+- identity recognition
+- menu routing
+- work mode transitions
+- task validation
+- helper functions
+- orchestration between internal components
+
+---
+
+## Phase 2 — Conversation Routing
+
+Objective:
+
+Verify complete conversation routing.
+
+Examples:
+
+- entry → menu
+- menu → work
+- menu → Kiron
+- menu → Alex
+- conversation state transitions
+- router pipeline
+
+---
+
+## Phase 3 — Retriever Tests
+
+Objective:
+
+Verify retrieval independently from the language model.
+
+Approach:
+
+- tiny local RAG documents
+- deterministic retrieval expectations
+- similarity threshold validation
+
+External services:
+
+No LLM required.
+
+---
+
+## Phase 4 — Local LLM Integration
+
+Objective:
+
+Verify integration with the local language model.
+
+Components:
+
+- llama-server
+- Qwen GGUF model
+- answer generators
+- llm_client
+
+Requirements:
+
+- local inference server running
+- model loaded
+- endpoint reachable
+
+These are integration tests.
+
+---
+
+## Phase 5 — End-to-End Tests
+
+Objective:
+
+Verify the complete user workflow.
+
+Pipeline:
+
+Browser
+
+↓
+
+Streamlit UI
+
+↓
+
+Conversation Router
+
+↓
+
+Retriever
+
+↓
+
+Answer Generator
+
+↓
+
+llama-server
+
+↓
+
+Qwen Model
+
+↓
+
+Response
+
+These tests validate the complete application from the user's perspective.
+
+---
+
+# Engineering Principles
+
+Testing is treated as part of the software architecture.
+
+The project follows these principles:
+
+- verify deterministic logic before integration
+- isolate external dependencies with mocks whenever appropriate
+- test one software responsibility at a time
+- document testing milestones alongside implementation
+- use small, reproducible test cases
+
+The goal is not maximum test count.
+
+The goal is confidence that Kiron's software contracts continue to behave correctly while the project evolves.
+
+---
+
+# Current Milestone Summary
+
+Verified:
+
+- deterministic conversation engine largely protected
+- conversation routing components progressively covered
+- mock-based orchestration testing established
+- reusable pytest workflow established
+- shell-assisted patch workflow integrated into development
+
+Development continues by completing Phase 1 before expanding into retriever, local LLM, and end-to-end integration testing.

@@ -21,7 +21,7 @@ def handle_menu_choice(user_input: str) -> tuple[str, str]:
     text = user_input.strip().lower()
 
     if text in {"1", "work", "work with files", "files"}:
-        return "work_mode", "Work mode selected. Which file would you like to work on?"
+        return "open_office", "🌿 Let us go to the office 🦕\n\nhttps://kiron-coding-assistant-x3d9klzag52v4rc92zress.streamlit.app/?page=chat"
 
     if text in {"2", "kiron", "kiron project", "project"}:
         return "kiron_mode", kiron_intro()

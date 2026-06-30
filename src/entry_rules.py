@@ -19,10 +19,30 @@ def normalize(text: str) -> str:
 
 def is_alex_identity(text: str) -> bool:
     """Return True if the user clearly identifies as Alex."""
-    return (
-        "alex" in text
-        and any(word in text for word in {"i", "am", "here"})
-    )
+    words = set(text.split())
+
+    if {"no", "nope"} & words:
+        return False
+
+    if "not" in words and "alex" in words:
+        return False
+
+    if "alex" in words and ({"i", "am"}.issubset(words) or "here" in words):
+        return True
+
+    if words in (
+        {"yes"},
+        {"y"},
+        {"yep"},
+        {"yeah"},
+        {"correct"},
+        {"me"},
+        {"it", "is", "me"},
+        {"it", "s", "me"},
+    ):
+        return True
+
+    return False
 
 
 def menu_response() -> str:

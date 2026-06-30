@@ -28,6 +28,21 @@ if "kiron_warned" not in st.session_state:
     st.session_state.kiron_warned = False
 
 
+OFFICE_URL = "https://kiron-coding-assistant-x3d9klzag52v4rc92zress.streamlit.app/?page=chat"
+
+
+def open_office_tab() -> None:
+    """Open the Office app in a new browser tab."""
+    st.markdown(
+        f"""
+        <script>
+        window.open("{OFFICE_URL}", "_blank");
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def route_message(user_input: str) -> str:
     """Route one user message through Kiron's conversation engine."""
     mode = st.session_state.mode
@@ -41,6 +56,11 @@ def route_message(user_input: str) -> str:
         next_mode, response = handle_menu_choice(user_input)
         st.session_state.mode = next_mode
         return response
+
+    if mode == "open_office":
+        open_office_tab()
+        st.session_state.mode = "menu"
+        return "🌿 Let us go to the office 🦕"
 
     if mode == "work_mode":
         next_mode, response, count = handle_work_mode(
