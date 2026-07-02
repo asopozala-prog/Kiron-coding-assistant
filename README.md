@@ -1,3 +1,6 @@
+streamlit App link:
+https://kiron-coding-assistant-x3d9klzag52v4rc92zress.streamlit.app/?page=built
+
 ````markdown
 # Kiron Local AI Workspace Prototype
 
