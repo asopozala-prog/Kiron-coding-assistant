@@ -57,7 +57,6 @@ st.markdown("""
 PAGES = [
     "User Persona · Alex Hoffmann",
     "User Need · Why Kiron",
-    "How Kiron Was Built",
     "Workspace Demo · Alex + Kiron",
 ]
 PAGE_QUERY_VALUES = {
@@ -124,15 +123,32 @@ def clean_chat_response(response):
 # Sidebar navigation
 with st.sidebar:
     st.title("🦕 Kiron")
-    current_page = st.session_state.page if st.session_state.page in PAGES else "User Persona · Alex Hoffmann"
+
+    hidden_built_page = st.session_state.page == "How Kiron Was Built"
+    current_page = (
+        "User Need · Why Kiron"
+        if hidden_built_page
+        else (
+            st.session_state.page
+            if st.session_state.page in PAGES
+            else "User Persona · Alex Hoffmann"
+        )
+    )
+
     page = st.radio(
         "Navigate",
         PAGES,
         index=PAGES.index(current_page),
         label_visibility="collapsed",
     )
-    st.session_state.page = page
-    st.query_params["page"] = PAGE_QUERY_VALUES[page]
+
+    if hidden_built_page:
+        if page != "User Need · Why Kiron":
+            st.session_state.page = page
+            st.query_params["page"] = PAGE_QUERY_VALUES[page]
+    else:
+        st.session_state.page = page
+        st.query_params["page"] = PAGE_QUERY_VALUES[page]
 
     st.divider()
     st.subheader("🦕 Try the Conversation Prototype")
@@ -276,32 +292,73 @@ Since Kiron became part of his daily workflow, Alex has gradually reclaimed hour
 elif st.session_state.page == "User Need · Why Kiron":
     st.title("User Need · Why Kiron")
 
-    st.subheader("The work dilemma")
-    col1, col2 = st.columns(2, gap="large")
+    st.markdown("### The Work Dilemma")
+    work_text_col, work_image_col = st.columns([0.56, 0.44], gap="large")
 
-    with col1:
-        render_markdown_file("legal_files/Statement_to_Programmer.md")
+    statement_path = Path("legal_files/Statement_to_Programmer.md")
+    statement_text = statement_path.read_text() if statement_path.exists() else ""
+    statement_text = statement_text.replace(
+        "# Alex's Statement to the Programmer\n\n---\n\n",
+        "",
+        1,
+    ).replace("\n\n---\n", "\n", 1)
 
-    with col2:
-        st.image("legal_files/alex_overwork.jpg", width="stretch")
+    with work_text_col:
+        st.markdown("#### Alex's Statement to the Programmer")
+        if statement_text:
+            st.markdown(statement_text)
+        else:
+            st.info("Statement_to_Programmer.md not found")
+
+    with work_image_col:
+        st.image("legal_files/alex_overwork.jpg", width=390)
         st.caption("Overwork (the reality)")
 
     st.divider()
 
-    st.subheader("The life he wants")
-    col1, col2 = st.columns(2, gap="large")
+    st.markdown("### The Life He Wants")
+    life_image_col, life_text_col = st.columns([0.44, 0.56], gap="large")
 
-    with col1:
-        st.image("legal_files/alex_cafe.jpg", width="stretch")
+    wanted_path = Path("legal_files/alex_wanted_life.md")
+    wanted_text = wanted_path.read_text() if wanted_path.exists() else ""
+    wanted_text = wanted_text.replace(
+        "# Alex's Statement — The Life He Wants\n\n---\n\n",
+        "",
+        1,
+    ).replace("\n\n---\n", "\n", 1)
+
+    with life_image_col:
+        st.image("legal_files/alex_cafe.jpg", width=340)
         st.caption("Coffee (the pause)")
-        st.image("legal_files/alex_bar.jpg", width="stretch")
+        st.image("legal_files/alex_bar.jpg", width=340)
         st.caption("Bar night (being present)")
 
-    with col2:
-        render_markdown_file(
-            "legal_files/alex_wanted_life.md",
-            fallback_text="Alex wants a life with more presence, calm, and time for what matters.",
-        )
+    with life_text_col:
+        st.markdown("#### Alex's Statement — The Life He Wants")
+        if wanted_text:
+            st.markdown(wanted_text)
+        else:
+            st.markdown(
+                "Alex wants a life with more presence, calm, and time for what matters."
+            )
+
+    st.divider()
+
+    st.markdown(
+        "**Want to see the engineering behind the solution?** "
+        "Open the build story to see how Kiron was designed and assembled."
+    )
+
+    if st.button(
+        "Explore How Kiron Was Built →",
+        type="primary",
+        use_container_width=False,
+        key="open_built_page",
+    ):
+        st.session_state.page = "How Kiron Was Built"
+        st.query_params["page"] = "built"
+        st.rerun()
+
 
 # PAGE 3: How Kiron Was Built
 elif st.session_state.page == "How Kiron Was Built":
