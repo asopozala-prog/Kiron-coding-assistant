@@ -1,40 +1,23 @@
-"""
-Office chat handler for the original portfolio app.
-
-This handler keeps the old app focused:
-Kiron only works with Alex on files.
-"""
-
-from src.entry_rules import is_alex_identity
-from src.work_mode_handler import handle_work_mode
-
-
-RUN_AGENT = "RUN_AGENT"
-
+# Handles the fixed two-step identity check for the Workspace Demonstration.
 
 def office_intro() -> str:
-    """Return the first office chat message."""
-    return "Hello! I'm Kiron 🦕, Alex's assistant.\n\nAre you Alex?"
-
-
-def office_fallback() -> str:
-    """Return fallback for non-Alex users."""
+    """Return the first identity-check message."""
     return (
-        "Sorry, I only work with Alex on his files.\n\n"
-        "If you'd like to explore Kiron as a conversational AI, "
-        "please use the Conversation Prototype from the sidebar."
+        "Hello! I'm Kiron 🦕, Alex's assistant.\n\n"
+        "**Are you Alex?**"
     )
 
 
 def confirms_alex(text: str) -> bool:
-    """Return True if user confirms they are Alex."""
-    normalized = text.strip().lower()
-    return normalized in {"yes", "yes i am", "yes, i am", "y", "yeah", "sure"}
+    """Return True only for the expected first demo answer."""
+    normalized = text.strip().lower().rstrip(".")
+    return normalized == "yes, i am alex"
 
 
-def alex_confirmed_response() -> str:
-    """Return confirmation message when Alex enters work mode."""
-    return "Hello Alex! 🦕\n\nLet's work with your files."
+def confirms_coffee(text: str) -> bool:
+    """Return True only for the expected second demo answer."""
+    normalized = text.strip().lower().rstrip(".")
+    return normalized == "double espresso"
 
 
 def handle_office_chat(
@@ -43,30 +26,56 @@ def handle_office_chat(
     work_unclear_count: int,
 ) -> tuple[str, str, int]:
     """
-    Handle the original app office conversation.
-
-    Returns:
-        (next_office_mode, response, next_work_unclear_count)
+    Handle the fixed identity-gate conversation.
 
     Modes:
         start
-        work_mode
+        coffee_check
+        verified
     """
-    if office_mode == "work_mode":
-        next_mode, response, next_count = handle_work_mode(
-            user_input,
-            work_unclear_count,
+
+    if office_mode == "start":
+        if confirms_alex(user_input):
+            return (
+                "coffee_check",
+                "Good morning, Alex. What is your coffee this morning?",
+                0,
+            )
+
+        return (
+            "start",
+            "**Kiron — Identity Check Failed**\n\n"
+            "I couldn't identify you as Alex.\n\n"
+            "I only open Alex's files and workspace after his identity has been confirmed.\n\n"
+            "If you're a guest and would like to talk with me, please open the "
+            "**Conversation Prototype**. I'll be happy to talk with you there, "
+            "but I won't provide access to Alex's files or private workspace.",
+            0,
         )
 
-        if next_mode == "work_mode" and next_count == 0:
-            return "work_mode", RUN_AGENT, next_count
+    if office_mode == "coffee_check":
+        if confirms_coffee(user_input):
+            return (
+                "verified",
+                "Welcome back, Alex. Identity confirmed.\n\nOpening your workspace…",
+                0,
+            )
 
-        if next_mode == "entry":
-            return "start", response, 0
+        return (
+            "coffee_check",
+            'Please answer: "Double espresso."',
+            0,
+        )
 
-        return "work_mode", response, next_count
+    if office_mode == "verified":
+        return (
+            "verified",
+            "Identity already confirmed.",
+            0,
+        )
 
-    if is_alex_identity(user_input) or confirms_alex(user_input):
-        return "work_mode", alex_confirmed_response(), 0
-
-    return "start", office_fallback(), 0
+    return (
+        "start",
+        'Please answer: "Yes, I am Alex."',
+        0,
+    )

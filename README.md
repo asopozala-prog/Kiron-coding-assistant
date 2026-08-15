@@ -1,31 +1,31 @@
-streamlit App link:
-https://kiron-coding-assistant-x3d9klzag52v4rc92zress.streamlit.app/?page=built
-
-````markdown
-# Kiron Local AI Workspace Prototype
+# Kiron — AI Product Demonstration Prototype
 
 ## What This Project Is
 
-Kiron is an experimental prototype for designing customizable local AI workspaces for people who understand their professional domain but do not have a deep technical background.
+Kiron is an experimental prototype for demonstrating how a customizable AI solution can be translated into a realistic, client-facing product experience.
 
-It is not a market-ready product, a general online chatbot, or an application designed for mass public use.
+The project is now aimed at the space between **AI engineering, AI consulting, and product demonstration**. Rather than presenting an AI system only through technical descriptions, feature lists, or abstract capabilities, Kiron places the technology inside a defined user persona, workplace, operational problem, and interactive workflow.
 
-The current Streamlit application is a public demonstration interface. It allows visitors to meet a representative user, Alex Hoffmann, understand his working problems, and see how a Kiron-style workspace could support confidential document work.
+The current demonstration follows **Alex Hoffmann**, a Junior Legal Assistant working with confidential legal documents. Visitors first understand Alex's responsibilities, constraints, and working problems, then see how a customized AI workspace could support those tasks in practice.
 
-Alex represents a wider group of professionals working across legal, administrative, financial, educational, healthcare, and other knowledge-based environments. They understand their work, constraints, and responsibilities, but may not know how a local AI system could be designed around their individual workspace.
+The central demonstration model is:
 
-The demonstration therefore answers four practical questions:
+> **AI Solution → Client Persona → Real Working Context → Interactive Experience**
 
-- What can a local AI workspace do?
-- Why might a professional need one?
-- How can it work with confidential documents?
-- How can the same architecture be customized for another user or domain?
+This structure is intended to help AI consultants, developers, and solution providers communicate a proposed AI product in a form that prospective clients can understand and experience.
 
-The project focuses on the software structure behind the demonstration. It develops and tests reusable components for conversation routing, retrieval, file operations, local language-model inference, agent tools, documentation, and testing.
+Kiron is therefore not presented as one finished legal product or one universal local-AI application. The legal workspace is a concrete demonstration case for a broader concept: **a reusable prototype architecture for showing how an AI implementation could fit a particular client's real working environment.**
 
-The current implementation is still under active development. Its purpose is to establish small, functioning pipelines that can be tested individually and later reused, replaced, or scaled for different professional environments.
+A different demonstration could replace Alex, the legal domain, the documents, workflows, retrieval knowledge, models, and interface content while preserving the underlying product-demonstration approach.
 
-The Streamlit interface presents the idea. The repository develops the underlying engineering system.
+The public Streamlit application combines two layers:
+
+- a **client-facing demonstration layer** that explains the persona, need, architecture, capabilities, and interactive workflow
+- an **engineering layer** that experiments with reusable AI components such as routing, retrieval, local inference, structured document processing, file operations, agent tools, documentation, and testing
+
+Local-first AI remains an important technical direction within the prototype, especially for professional environments involving confidential or sensitive information. However, local deployment is now one implementation strategy inside the broader demonstration concept rather than the sole identity of the project.
+
+The repository remains experimental and under active development. Its purpose is both to build working AI pipelines and to explore how those pipelines can be communicated as a credible, customizable solution to a real client or market.
 
 ---
 
